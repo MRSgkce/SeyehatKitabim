@@ -126,7 +126,51 @@ class ViewController: UIViewController,MKMapViewDelegate, CLLocationManagerDeleg
             
         }
     }
+    
+    func mapView(_ mapView: MKMapView, viewFor annotation: any MKAnnotation) -> MKAnnotationView? {
+        //bu fonksiyonu yazarsak özelleştirmiş point oluyor
+        if annotation is MKUserLocation {
+            return nil
+        }
+        let reuseId = "pin"
+        var pinView = mapView.dequeueReusableAnnotationView(withIdentifier: "pin") as? MKPinAnnotationView
+        
+        if pinView == nil {
+            pinView = MKPinAnnotationView(annotation : annotation, reuseIdentifier: reuseId)
+            pinView?.canShowCallout = true
+            pinView?.tintColor = UIColor.black
+            let button = UIButton(type: UIButton.ButtonType.detailDisclosure)
+            pinView?.rightCalloutAccessoryView = button
+        }
+        else{
+            pinView?.annotation = annotation
+        }
+        return pinView
+        
+        
+    }
 
+    func mapView(_ mapView: MKMapView, annotationView view: MKAnnotationView, calloutAccessoryControlTapped control: UIControl) {
+        //navigasyon ekleme için
+        if selectedTitle != ""{
+            var requestLocation = CLLocation(latitude: annotationlatitdu, longitude: annotationlongitdu)
+            CLGeocoder().reverseGeocodeLocation(requestLocation){
+                (placemarks,error ) in
+                if let placemark = placemarks{
+                    if placemark.count > 0{
+                        
+                        let newPlacemark = MKPlacemark(placemark: placemark[0])
+                        
+                    let item = MKMapItem(placemark: newPlacemark)
+                        item.name = self.annotationtitle
+                        let launchoptions = [MKLaunchOptionsDirectionsModeKey: MKLaunchOptionsDirectionsModeDriving]
+                        item.openInMaps(launchOptions: launchoptions)
+                    }
+                    
+                }
+            }
+        }
+    }
 
     @IBAction func save(_ sender: Any) {
         let appdelegate = UIApplication.shared.delegate as! AppDelegate
